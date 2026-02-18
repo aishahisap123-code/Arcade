@@ -63,6 +63,54 @@ function update() {
     if (direction === "DOWN") head.y += box;
 
     if (
-        
-    )
+       head.x < 0 ||
+       head.y < 0 ||
+       head.x >= canvasSize ||
+       head.y >= canvasSize
+    ) {
+        endGame();
+        return;
+    }
+
+    for (let part of snake) {
+        if (head.x === part.x && head.y === part.y) {
+            endGame();
+            return;
+        }
+    }
+    snake.unshift(head);
+
+    if (head.x === food.x && head.y === food.y) {
+        score++;
+        document.getElementById("score").textContent = score;
+        spawnFood();
+    } else {
+        snake.pop();
+    }
+
+    draw();
+
 }
+
+function endGame() {
+    clearInterval(gameInterval);
+    gameOver = true;
+
+    alert("Game Over! Score: " + score);
+
+    initGame();
+}
+
+document.addEventListener("keydown", event => {
+    if (event.key === "ArrowLeft" && direction !== "RIGHT")
+        direction = "LEFT";
+    else if (event.key === "ArrowUp" && direction !== "DOWN")
+        direction = "UP";
+    else if (event.key === "ArrowRight" && direction !== "LEFT")
+        direction = "RIGHT";
+    else if (event.key === "ArrowDown" && direction !== "UP")
+        direction = "DOWN";
+    
+});
+
+initGame;
