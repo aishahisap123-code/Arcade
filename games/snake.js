@@ -1,7 +1,8 @@
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const box = 20;
+const box = 20; // grid size
 const canvasSize = 400;
 
 let snake;
@@ -10,6 +11,7 @@ let direction;
 let score;
 let gameInterval;
 let gameOver = false;
+
 
 function initGame() {
     snake = [
@@ -28,26 +30,31 @@ function initGame() {
     gameInterval = setInterval(update, 120);
 }
 
+
 function spawnFood() {
     food = {
         x: Math.floor(Math.random() * 20) * box,
-        y: Math.floor(Math.random() * 20) * box 
+        y: Math.floor(Math.random() * 20) * box
     };
 }
 
+
 function draw() {
-    
+    // Clear canvas
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvasSize, canvasSize);
 
+    // Draw snake
     ctx.fillStyle = "#39ff14";
     snake.forEach(part => {
         ctx.fillRect(part.x, part.y, box, box);
     });
 
+    // Draw food
     ctx.fillStyle = "#ff00ff";
     ctx.fillRect(food.x, food.y, box, box);
 }
+
 
 function update() {
     if (!direction) {
@@ -62,23 +69,27 @@ function update() {
     if (direction === "RIGHT") head.x += box;
     if (direction === "DOWN") head.y += box;
 
+   
     if (
-       head.x < 0 ||
-       head.y < 0 ||
-       head.x >= canvasSize ||
-       head.y >= canvasSize
+        head.x < 0 ||
+        head.y < 0 ||
+        head.x >= canvasSize ||
+        head.y >= canvasSize
     ) {
         endGame();
         return;
     }
 
+  
     for (let part of snake) {
         if (head.x === part.x && head.y === part.y) {
             endGame();
             return;
         }
     }
+
     snake.unshift(head);
+
 
     if (head.x === food.x && head.y === food.y) {
         score++;
@@ -89,8 +100,8 @@ function update() {
     }
 
     draw();
-
 }
+
 
 function endGame() {
     clearInterval(gameInterval);
@@ -101,6 +112,7 @@ function endGame() {
     initGame();
 }
 
+
 document.addEventListener("keydown", event => {
     if (event.key === "ArrowLeft" && direction !== "RIGHT")
         direction = "LEFT";
@@ -110,7 +122,8 @@ document.addEventListener("keydown", event => {
         direction = "RIGHT";
     else if (event.key === "ArrowDown" && direction !== "UP")
         direction = "DOWN";
-    
 });
 
-initGame;
+
+initGame();
+
