@@ -126,6 +126,8 @@ button:hover {
     align-items: center;
     color: #ff00ff;
     text-align: center;
+    gap: 2rem;
+    margin-left: 4rem;
 }
 
 .hidden {
