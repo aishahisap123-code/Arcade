@@ -167,12 +167,18 @@ function gameLoop() {
 }
 
 // ===== START GAME =====
-canvas.addEventListener("click", () => {
-    if (!gameRunning) {
-        startMessage.classList.add("hidden");
-        gameRunning = true;
-    }
-});
+document.addEventListener("click", startGame);
+
+function startGame() {
+    if (gameRunning) return;
+
+    startMessage.classList.add("hidden");
+    gameRunning = true;
+
+    // Remove listener so it doesn’t trigger again
+    document.removeEventListener("click", startGame);
+}
+
 
 // ===== END GAME =====
 function endGame(message) {
@@ -185,9 +191,12 @@ function endGame(message) {
 // ===== RESTART =====
 restartBtn.addEventListener("click", () => {
     gameOverOverlay.classList.add("hidden");
-    startMessage.classList.remove("hidden");
     initGame();
+
+    // Allow clicking again to start
+    document.addEventListener("click", startGame);
 });
+
 
 // ===== INITIALISE =====
 initGame();
