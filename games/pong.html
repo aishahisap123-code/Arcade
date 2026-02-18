@@ -1,6 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    
+    <meta charset="UTF-8">
+    <title>Pong - Aishah's Arcade</title>
+    <meta name="viewport" content="width=device-width, inital-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
 </head>
+<body>
+
+<header>
+    <h1 class="neon-title">PONG</h1>
+</header>
+
+<main style="padding: 2rem; text-align: center;">
+
+    <div style="position: relative; display: inline-block;">
+
+        <canvas id="pongCanvas" width="600" height="400"></canvas>
+
+        <div id="startMessage" class="overlay-screen">
+            <h2>CLICK TO START</h2>
+            <p style="margin-top: 1rem; font-size: 0.6rem;">
+                Move mouse to control paddle
+            </p>
+        </div>
+
+    </div>
+
+    <div style="margin-top: 2rem;">
+        <p>FIRST TO 5 WINS</p>
+        <p>Player Score: <span id="playerScore">0</span></p>
+    </div>
+
+    <div style="margin-top: 3rem;">
+        <a href="../index.html" class="game-card">
+            BACK TO ARCADE
+        </a>
+    </div>
+
+</main>
+
+<script src="pong.js"></script>
+
+</body>
 </html>
