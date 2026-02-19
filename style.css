@@ -139,7 +139,7 @@ button:hover {
     position: relative;
     width: 600px;
     height: 400px;
-    margin: 0 auto; /* centers horizontally */
+    margin: 0 auto; 
 }
 
 .overlay-screen h2 {
@@ -150,4 +150,14 @@ button:hover {
         0 0 25px #ff00ff;
 }
 
+canvas {
+    background: black;
+    box-shadow:
+        0 0 15px #ff00ff,
+        0 0 30px #00ffff,
+        0 0 60px #39ff14;
+}
 
+.pongy {
+    margin-left: 6rem;
+}

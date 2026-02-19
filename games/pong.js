@@ -7,7 +7,7 @@ const startMessage = document.getElementById("startMessage");
 
 // Create Game Over overlay dynamically (so we don’t edit HTML again)
 const gameOverOverlay = document.createElement("div");
-gameOverOverlay.classList.add("overlay-screen", "hidden");
+gameOverOverlay.classList.add("overlay-screen", "hidden", "pongy");
 gameOverOverlay.innerHTML = `
     <h2 id="winnerText"></h2>
     <button id="restartBtn">RESTART</button>
