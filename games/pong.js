@@ -1,8 +1,8 @@
-// ===== CANVAS =====
+// CANVAS 
 const canvas = document.getElementById("pongCanvas");
 const ctx = canvas.getContext("2d");
 
-// ===== DOM =====
+//  DOM 
 const startMessage = document.getElementById("startMessage");
 
 // Create Game Over overlay dynamically (so we don’t edit HTML again)
@@ -18,13 +18,13 @@ const winnerText = document.getElementById("winnerText");
 const restartBtn = document.getElementById("restartBtn");
 const playerScoreDisplay = document.getElementById("playerScore");
 
-// ===== CONSTANTS =====
+//  CONSTANTS 
 const paddleWidth = 12;
 const paddleHeight = 100;
 const ballSize = 12;
 const winScore = 5;
 
-// ===== GAME STATE =====
+//  GAME STATE 
 let playerY;
 let aiY;
 let ballX;
@@ -35,7 +35,7 @@ let playerScore;
 let aiScore;
 let gameRunning = false;
 
-// ===== INIT GAME =====
+//  INIT GAME 
 function initGame() {
     playerY = canvas.height / 2 - paddleHeight / 2;
     aiY = canvas.height / 2 - paddleHeight / 2;
@@ -54,7 +54,7 @@ function initGame() {
     gameRunning = false;
 }
 
-// ===== RESET BALL =====
+//  RESET BALL 
 function resetBall() {
     ballX = canvas.width / 2;
     ballY = canvas.height / 2;
@@ -63,13 +63,13 @@ function resetBall() {
     ballSpeedY = 4 * (Math.random() > 0.5 ? 1 : -1);
 }
 
-// ===== CONTROLS =====
+//  CONTROLS 
 document.addEventListener("mousemove", e => {
     const rect = canvas.getBoundingClientRect();
     playerY = e.clientY - rect.top - paddleHeight / 2;
 });
 
-// ===== DRAW =====
+//  DRAW 
 function draw() {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -96,7 +96,7 @@ function draw() {
     ctx.fillText(aiScore, canvas.width * 3 / 4, 40);
 }
 
-// ===== UPDATE =====
+//  UPDATE 
 function update() {
     if (!gameRunning) return;
 
@@ -160,13 +160,13 @@ function update() {
     draw();
 }
 
-// ===== GAME LOOP =====
+// GAME LOOP 
 function gameLoop() {
     update();
     requestAnimationFrame(gameLoop);
 }
 
-// ===== START GAME =====
+//START GAME 
 document.addEventListener("click", startGame);
 
 function startGame() {
@@ -180,7 +180,7 @@ function startGame() {
 }
 
 
-// ===== END GAME =====
+//  END GAME 
 function endGame(message) {
     gameRunning = false;
 
@@ -188,7 +188,7 @@ function endGame(message) {
     gameOverOverlay.classList.remove("hidden");
 }
 
-// ===== RESTART =====
+//  RESTART 
 restartBtn.addEventListener("click", () => {
     gameOverOverlay.classList.add("hidden");
     initGame();
@@ -198,6 +198,6 @@ restartBtn.addEventListener("click", () => {
 });
 
 
-// ===== INITIALISE =====
+// INITIALISE 
 initGame();
 gameLoop();
