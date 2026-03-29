@@ -2,40 +2,41 @@
 const canvas = document.getElementById("pongCanvas");
 const ctx = canvas.getContext("2d");
 
-//  DOM 
+// DOM
 const startMessage = document.getElementById("startMessage");
-
-// Create Game Over overlay dynamically (so we don’t edit HTML again)
-const gameOverOverlay = document.createElement("div");
-gameOverOverlay.classList.add("overlay-screen", "hidden", "pongy");
-gameOverOverlay.innerHTML = `
-    <h2 id="winnerText"></h2>
-    <button id="restartBtn">RESTART</button>
-`;
-canvas.parentElement.appendChild(gameOverOverlay);
-
-const winnerText = document.getElementById("winnerText");
-const restartBtn = document.getElementById("restartBtn");
 const playerScoreDisplay = document.getElementById("playerScore");
 
-//  CONSTANTS 
+// CREATE GAME OVER SCREEN
+const gameOverOverlay = document.createElement("div");
+gameOverOverlay.classList.add("overlay-screen", "hidden", "pongy");
+
+gameOverOverlay.innerHTML = `
+    <h2 id="winnerText"></h2>
+    <input id="nameInput" placeholder="Enter name">
+    <button id="submitScoreBtn">SUBMIT</button>
+    <button id="restartBtn">RESTART</button>
+`;
+
+canvas.parentElement.appendChild(gameOverOverlay);
+
+// NOW get elements (AFTER creation)
+const winnerText = document.getElementById("winnerText");
+const nameInput = document.getElementById("nameInput");
+const submitScoreBtn = document.getElementById("submitScoreBtn");
+const restartBtn = document.getElementById("restartBtn");
+
+// CONSTANTS
 const paddleWidth = 12;
 const paddleHeight = 100;
 const ballSize = 12;
 const winScore = 5;
 
-//  GAME STATE 
-let playerY;
-let aiY;
-let ballX;
-let ballY;
-let ballSpeedX;
-let ballSpeedY;
-let playerScore;
-let aiScore;
+// GAME STATE
+let playerY, aiY, ballX, ballY, ballSpeedX, ballSpeedY;
+let playerScore, aiScore;
 let gameRunning = false;
 
-//  INIT GAME 
+// INIT
 function initGame() {
     playerY = canvas.height / 2 - paddleHeight / 2;
     aiY = canvas.height / 2 - paddleHeight / 2;
@@ -50,11 +51,10 @@ function initGame() {
     aiScore = 0;
 
     playerScoreDisplay.textContent = playerScore;
-
     gameRunning = false;
 }
 
-//  RESET BALL 
+// RESET BALL
 function resetBall() {
     ballX = canvas.width / 2;
     ballY = canvas.height / 2;
@@ -63,110 +63,81 @@ function resetBall() {
     ballSpeedY = 4 * (Math.random() > 0.5 ? 1 : -1);
 }
 
-//  CONTROLS 
+// CONTROLS
 document.addEventListener("mousemove", e => {
     const rect = canvas.getBoundingClientRect();
     playerY = e.clientY - rect.top - paddleHeight / 2;
 });
 
-//  DRAW 
+// DRAW
 function draw() {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = "#39ff14";
 
-    // Player paddle
     ctx.fillRect(10, playerY, paddleWidth, paddleHeight);
-
-    // AI paddle
     ctx.fillRect(canvas.width - 22, aiY, paddleWidth, paddleHeight);
-
-    // Ball
     ctx.fillRect(ballX, ballY, ballSize, ballSize);
 
-    // Center line
     for (let i = 0; i < canvas.height; i += 20) {
         ctx.fillRect(canvas.width / 2 - 1, i, 2, 10);
     }
 
-    // Scores
     ctx.font = "20px 'Press Start 2P'";
     ctx.fillText(playerScore, canvas.width / 4, 40);
     ctx.fillText(aiScore, canvas.width * 3 / 4, 40);
 }
 
-//  UPDATE 
+// UPDATE
 function update() {
     if (!gameRunning) return;
 
     ballX += ballSpeedX;
     ballY += ballSpeedY;
 
-    // Wall bounce
     if (ballY <= 0 || ballY >= canvas.height - ballSize) {
         ballSpeedY *= -1;
     }
 
-    // Player collision
-    if (
-        ballX <= 22 &&
-        ballY > playerY &&
-        ballY < playerY + paddleHeight
-    ) {
+    if (ballX <= 22 && ballY > playerY && ballY < playerY + paddleHeight) {
         ballSpeedX *= -1;
-
         let deltaY = ballY - (playerY + paddleHeight / 2);
         ballSpeedY = deltaY * 0.15;
     }
 
-    // AI collision
-    if (
-        ballX >= canvas.width - 34 &&
-        ballY > aiY &&
-        ballY < aiY + paddleHeight
-    ) {
+    if (ballX >= canvas.width - 34 && ballY > aiY && ballY < aiY + paddleHeight) {
         ballSpeedX *= -1;
-
         let deltaY = ballY - (aiY + paddleHeight / 2);
         ballSpeedY = deltaY * 0.15;
     }
 
-    // AI Movement (slightly imperfect so it’s beatable)
     aiY += (ballY - (aiY + paddleHeight / 2)) * 0.08;
 
-    // Player scores
     if (ballX > canvas.width) {
         playerScore++;
         playerScoreDisplay.textContent = playerScore;
         resetBall();
     }
 
-    // AI scores
     if (ballX < 0) {
         aiScore++;
         resetBall();
     }
 
-    // Win condition
-    if (playerScore >= winScore) {
-        endGame("YOU WIN!");
-    }
-
-    if (aiScore >= winScore) {
-        endGame("AI WINS!");
-    }
+    if (playerScore >= winScore) endGame("YOU WIN!");
+    if (aiScore >= winScore) endGame("AI WINS!");
 
     draw();
 }
 
-// GAME LOOP 
+// LOOP
 function gameLoop() {
     update();
     requestAnimationFrame(gameLoop);
 }
 
-//START GAME 
+// START
 document.addEventListener("click", startGame);
 
 function startGame() {
@@ -175,29 +146,79 @@ function startGame() {
     startMessage.classList.add("hidden");
     gameRunning = true;
 
-    // Remove listener so it doesn’t trigger again
     document.removeEventListener("click", startGame);
 }
 
-
-//  END GAME 
+// END GAME
 function endGame(message) {
     gameRunning = false;
 
     winnerText.textContent = message;
     gameOverOverlay.classList.remove("hidden");
+
+    canvas.dataset.score = playerScore;
 }
 
-//  RESTART 
-restartBtn.addEventListener("click", () => {
-    gameOverOverlay.classList.add("hidden");
-    initGame();
+// SAVE SCORE
+submitScoreBtn.addEventListener("click", () => {
+    const name = nameInput.value;
+    const score = parseInt(canvas.dataset.score);
 
-    // Allow clicking again to start
-    document.addEventListener("click", startGame);
+    saveScore("pong", score, name);
+    submitScoreBtn.textContent = "Saved!";
 });
 
+// RESTART
+restartBtn.addEventListener("click", () => {
+    location.reload();
+});
 
-// INITIALISE 
+// LEADERBOARD FUNCTION
+function saveScore(game, score, name) {
+    if (!name) name = "Player";
+
+    let scores = JSON.parse(localStorage.getItem(game)) || [];
+
+    let existing = scores.find(s => s.name === name);
+
+    if (existing) {
+        if (score > existing.score) {
+            existing.score = score;
+        }
+    } else {
+        scores.push({ name, score });
+    }
+
+    scores.sort((a, b) => b.score - a.score);
+    scores = scores.slice(0, 5);
+
+    localStorage.setItem(game, JSON.stringify(scores));
+}
+
+// SOUND SYSTEM
+const music = new Audio("../sounds/arcade.mp3");
+music.loop = true;
+music.volume = 0.3;
+
+let musicOn = localStorage.getItem("musicOn");
+
+if (musicOn === null) {
+    localStorage.setItem("musicOn", "true");
+    musicOn = "true";
+}
+
+if (musicOn === "true") music.play();
+
+function toggleMusic() {
+    if (music.paused) {
+        music.play();
+        localStorage.setItem("musicOn", "true");
+    } else {
+        music.pause();
+        localStorage.setItem("musicOn", "false");
+    }
+}
+
+// INIT
 initGame();
 gameLoop();

@@ -1,21 +1,21 @@
 // CANVAS
-const canvas = document.getElementById("breakoutCanvas");
+const canvas = document.getElementById("spaceCanvas");
 const ctx = canvas.getContext("2d");
 
 // DOM
 const startMessage = document.getElementById("startMessage");
 const scoreDisplay = document.getElementById("score");
 
-// OVERLAY
+// OVERLAY (WITH LEADERBOARD)
 const gameOverOverlay = document.createElement("div");
 gameOverOverlay.classList.add("overlay-screen", "hidden");
 
 gameOverOverlay.innerHTML = `
-    <h2 id="endText"></h2>
-    <p id="finalScore"></p>
-    <input id="nameInput" placeholder="Enter name">
-    <button id="submitScoreBtn">SUBMIT</button>
-    <button id="restartBtn">RESTART</button>
+<h2 id="endText"></h2>
+<p id="finalScore"></p>
+<input id="nameInput" placeholder="Enter name">
+<button id="submitScoreBtn">SUBMIT</button>
+<button id="restartBtn">RESTART</button>
 `;
 
 canvas.parentElement.appendChild(gameOverOverlay);
@@ -27,68 +27,50 @@ const nameInput = document.getElementById("nameInput");
 const submitScoreBtn = document.getElementById("submitScoreBtn");
 const restartBtn = document.getElementById("restartBtn");
 
-// CONSTANTS
-const paddleWidth = 100;
-const paddleHeight = 10;
-const ballSize = 10;
+// STATE
+let playerX, bullets, enemies, score, gameRunning;
 
-const brickRows = 4;
-const brickCols = 8;
-const brickWidth = 60;
-const brickHeight = 20;
-const brickPadding = 10;
-const offsetTop = 40;
-const offsetLeft = 35;
-
-// GAME STATE
-let paddleX, ballX, ballY, ballDX, ballDY, score, gameRunning;
-let bricks = [];
+// CONTROLS
+let left = false;
+let right = false;
 
 // INIT
 function initGame() {
-    paddleX = canvas.width / 2 - paddleWidth / 2;
-    ballX = canvas.width / 2;
-    ballY = canvas.height - 40;
-
-    ballDX = 4;
-    ballDY = -4;
-
+    playerX = canvas.width / 2 - 25;
+    bullets = [];
+    enemies = [];
     score = 0;
-    scoreDisplay.textContent = score;
 
-    createBricks();
-    gameRunning = false;
-
-    draw(); // 
-}
-
-// CREATE BRICKS
-function createBricks() {
-    bricks = [];
-
-    for (let r = 0; r < brickRows; r++) {
-        for (let c = 0; c < brickCols; c++) {
-            bricks.push({
-                x: c * (brickWidth + brickPadding) + offsetLeft,
-                y: r * (brickHeight + brickPadding) + offsetTop,
+    // CREATE ENEMIES GRID
+    for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 8; c++) {
+            enemies.push({
+                x: c * 60 + 40,
+                y: r * 40 + 40,
                 alive: true
             });
         }
     }
+
+    scoreDisplay.textContent = score;
+    gameRunning = false;
+
+    draw();
 }
 
-// CONTROLS 
-canvas.addEventListener("mousemove", e => {
-    const rect = canvas.getBoundingClientRect();
-    let mouseX = e.clientX - rect.left;
+// INPUT
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") left = true;
+    if (e.key === "ArrowRight") right = true;
 
-    paddleX = mouseX - paddleWidth / 2;
-
-    // CLAMP 
-    if (paddleX < 0) paddleX = 0;
-    if (paddleX > canvas.width - paddleWidth) {
-        paddleX = canvas.width - paddleWidth;
+    if (e.key === " " && gameRunning) {
+        bullets.push({ x: playerX + 22, y: 350 });
     }
+});
+
+document.addEventListener("keyup", e => {
+    if (e.key === "ArrowLeft") left = false;
+    if (e.key === "ArrowRight") right = false;
 });
 
 // DRAW
@@ -98,17 +80,15 @@ function draw() {
 
     ctx.fillStyle = "#39ff14";
 
-    // Paddle
-    ctx.fillRect(paddleX, canvas.height - 20, paddleWidth, paddleHeight);
+    // PLAYER
+    ctx.fillRect(playerX, 370, 50, 10);
 
-    // Ball
-    ctx.fillRect(ballX, ballY, ballSize, ballSize);
+    // BULLETS
+    bullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 10));
 
-    // Bricks
-    bricks.forEach(b => {
-        if (b.alive) {
-            ctx.fillRect(b.x, b.y, brickWidth, brickHeight);
-        }
+    // ENEMIES
+    enemies.forEach(e => {
+        if (e.alive) ctx.fillRect(e.x, e.y, 30, 20);
     });
 }
 
@@ -116,42 +96,51 @@ function draw() {
 function update() {
     if (!gameRunning) return;
 
-    ballX += ballDX;
-    ballY += ballDY;
+    // PLAYER MOVEMENT
+    if (left) playerX -= 5;
+    if (right) playerX += 5;
 
-    if (ballX <= 0 || ballX >= canvas.width - ballSize) ballDX *= -1;
-    if (ballY <= 0) ballDY *= -1;
+    // CLAMP PLAYER
+    if (playerX < 0) playerX = 0;
+    if (playerX > canvas.width - 50) playerX = canvas.width - 50;
 
-    // Paddle collision
-    if (
-        ballY > canvas.height - 30 &&
-        ballX > paddleX &&
-        ballX < paddleX + paddleWidth
-    ) {
-        ballDY *= -1;
-    }
+    // BULLETS
+    bullets.forEach(b => b.y -= 5);
 
-    // Brick collision
-    bricks.forEach(b => {
-        if (
-            b.alive &&
-            ballX > b.x &&
-            ballX < b.x + brickWidth &&
-            ballY > b.y &&
-            ballY < b.y + brickHeight
-        ) {
-            b.alive = false;
-            ballDY *= -1;
-            score += 10;
-            scoreDisplay.textContent = score;
-        }
+    // REMOVE OFF SCREEN BULLETS
+    bullets = bullets.filter(b => b.y > 0);
+
+    // ENEMIES MOVE DOWN
+    enemies.forEach(e => {
+        if (e.alive) e.y += 0.05;
     });
 
-    // LOSE
-    if (ballY > canvas.height) endGame("GAME OVER");
+    // COLLISION
+    bullets.forEach(b => {
+        enemies.forEach(e => {
+            if (
+                e.alive &&
+                b.x > e.x &&
+                b.x < e.x + 30 &&
+                b.y > e.y &&
+                b.y < e.y + 20
+            ) {
+                e.alive = false;
+                score += 10;
+                scoreDisplay.textContent = score;
+            }
+        });
+    });
 
-    // WIN
-    if (bricks.every(b => !b.alive)) endGame("YOU WIN!");
+    // LOSE CONDITION
+    if (enemies.some(e => e.alive && e.y > 350)) {
+        endGame("GAME OVER");
+    }
+
+    // WIN CONDITION
+    if (enemies.every(e => !e.alive)) {
+        endGame("YOU WIN!");
+    }
 
     draw();
 }
@@ -168,7 +157,7 @@ startMessage.addEventListener("click", () => {
     gameRunning = true;
 });
 
-// END
+// END GAME
 function endGame(msg) {
     gameRunning = false;
 
@@ -185,7 +174,7 @@ submitScoreBtn.addEventListener("click", () => {
     const name = nameInput.value;
     const score = parseInt(canvas.dataset.score);
 
-    saveScore("breakout", score, name);
+    saveScore("invaders", score, name);
 
     submitScoreBtn.textContent = "Saved!";
 });

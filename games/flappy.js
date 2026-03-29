@@ -1,5 +1,5 @@
 // CANVAS
-const canvas = document.getElementById("breakoutCanvas");
+const canvas = document.getElementById("flappyCanvas");
 const ctx = canvas.getContext("2d");
 
 // DOM
@@ -11,11 +11,11 @@ const gameOverOverlay = document.createElement("div");
 gameOverOverlay.classList.add("overlay-screen", "hidden");
 
 gameOverOverlay.innerHTML = `
-    <h2 id="endText"></h2>
-    <p id="finalScore"></p>
-    <input id="nameInput" placeholder="Enter name">
-    <button id="submitScoreBtn">SUBMIT</button>
-    <button id="restartBtn">RESTART</button>
+<h2 id="endText"></h2>
+<p id="finalScore"></p>
+<input id="nameInput" placeholder="Enter name">
+<button id="submitScoreBtn">SUBMIT</button>
+<button id="restartBtn">RESTART</button>
 `;
 
 canvas.parentElement.appendChild(gameOverOverlay);
@@ -27,68 +27,40 @@ const nameInput = document.getElementById("nameInput");
 const submitScoreBtn = document.getElementById("submitScoreBtn");
 const restartBtn = document.getElementById("restartBtn");
 
-// CONSTANTS
-const paddleWidth = 100;
-const paddleHeight = 10;
-const ballSize = 10;
-
-const brickRows = 4;
-const brickCols = 8;
-const brickWidth = 60;
-const brickHeight = 20;
-const brickPadding = 10;
-const offsetTop = 40;
-const offsetLeft = 35;
-
-// GAME STATE
-let paddleX, ballX, ballY, ballDX, ballDY, score, gameRunning;
-let bricks = [];
+// STATE
+let birdY, velocity, gravity, pipes, score, gameRunning;
 
 // INIT
 function initGame() {
-    paddleX = canvas.width / 2 - paddleWidth / 2;
-    ballX = canvas.width / 2;
-    ballY = canvas.height - 40;
-
-    ballDX = 4;
-    ballDY = -4;
-
+    birdY = 250;
+    velocity = 0;
+    gravity = 0.5;
+    pipes = [];
     score = 0;
-    scoreDisplay.textContent = score;
 
-    createBricks();
+    scoreDisplay.textContent = score;
     gameRunning = false;
 
-    draw(); // 
+    draw();
 }
 
-// CREATE BRICKS
-function createBricks() {
-    bricks = [];
+// CREATE PIPES
+function createPipe() {
+    const gap = 120;
+    const topHeight = Math.random() * 200 + 50;
 
-    for (let r = 0; r < brickRows; r++) {
-        for (let c = 0; c < brickCols; c++) {
-            bricks.push({
-                x: c * (brickWidth + brickPadding) + offsetLeft,
-                y: r * (brickHeight + brickPadding) + offsetTop,
-                alive: true
-            });
-        }
-    }
+    pipes.push({
+        x: canvas.width,
+        top: topHeight,
+        bottom: topHeight + gap,
+        passed: false
+    });
 }
 
-// CONTROLS 
-canvas.addEventListener("mousemove", e => {
-    const rect = canvas.getBoundingClientRect();
-    let mouseX = e.clientX - rect.left;
-
-    paddleX = mouseX - paddleWidth / 2;
-
-    // CLAMP 
-    if (paddleX < 0) paddleX = 0;
-    if (paddleX > canvas.width - paddleWidth) {
-        paddleX = canvas.width - paddleWidth;
-    }
+// CONTROLS
+document.addEventListener("click", () => {
+    if (!gameRunning) return;
+    velocity = -8;
 });
 
 // DRAW
@@ -98,60 +70,59 @@ function draw() {
 
     ctx.fillStyle = "#39ff14";
 
-    // Paddle
-    ctx.fillRect(paddleX, canvas.height - 20, paddleWidth, paddleHeight);
+    // Bird
+    ctx.fillRect(100, birdY, 20, 20);
 
-    // Ball
-    ctx.fillRect(ballX, ballY, ballSize, ballSize);
-
-    // Bricks
-    bricks.forEach(b => {
-        if (b.alive) {
-            ctx.fillRect(b.x, b.y, brickWidth, brickHeight);
-        }
+    // Pipes
+    pipes.forEach(p => {
+        ctx.fillRect(p.x, 0, 40, p.top);
+        ctx.fillRect(p.x, p.bottom, 40, canvas.height);
     });
 }
 
+let pipeTimer = 0;
 // UPDATE
 function update() {
     if (!gameRunning) return;
 
-    ballX += ballDX;
-    ballY += ballDY;
+    velocity += gravity;
+    birdY += velocity;
 
-    if (ballX <= 0 || ballX >= canvas.width - ballSize) ballDX *= -1;
-    if (ballY <= 0) ballDY *= -1;
+    // PIPE SPAWN
+    pipeTimer++;
 
-    // Paddle collision
-    if (
-        ballY > canvas.height - 30 &&
-        ballX > paddleX &&
-        ballX < paddleX + paddleWidth
-    ) {
-        ballDY *= -1;
+    if (pipeTimer > 100) { // controls spacing
+       createPipe();
+       pipeTimer = 0;
     }
 
-    // Brick collision
-    bricks.forEach(b => {
-        if (
-            b.alive &&
-            ballX > b.x &&
-            ballX < b.x + brickWidth &&
-            ballY > b.y &&
-            ballY < b.y + brickHeight
-        ) {
-            b.alive = false;
-            ballDY *= -1;
-            score += 10;
+
+    pipes = pipes.filter(p => p.x > -50);
+    
+    pipes.forEach(p => {
+        p.x -= 3;
+
+        // SCORE
+        if (!p.passed && p.x < 100) {
+            score++;
             scoreDisplay.textContent = score;
+            p.passed = true;
+        }
+
+        // COLLISION
+        if (
+            100 < p.x + 40 &&
+            120 > p.x &&
+            (birdY < p.top || birdY > p.bottom)
+        ) {
+            endGame("GAME OVER");
         }
     });
 
-    // LOSE
-    if (ballY > canvas.height) endGame("GAME OVER");
-
-    // WIN
-    if (bricks.every(b => !b.alive)) endGame("YOU WIN!");
+    // GROUND / CEILING
+    if (birdY > canvas.height || birdY < 0) {
+        endGame("GAME OVER");
+    }
 
     draw();
 }
@@ -185,8 +156,7 @@ submitScoreBtn.addEventListener("click", () => {
     const name = nameInput.value;
     const score = parseInt(canvas.dataset.score);
 
-    saveScore("breakout", score, name);
-
+    saveScore("flappy", score, name);
     submitScoreBtn.textContent = "Saved!";
 });
 

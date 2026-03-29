@@ -13,6 +13,7 @@
     <header>
         <h1 class="neon-title">SNAKE</h1>
     </header>
+    <button onclick="toggleMusic()" class="btn">MUSIC ON/OFF</button>
 
    <main style="padding: 2rem; position: relative;">
 
@@ -34,8 +35,13 @@
     <!-- Game Over Screen -->
     <div id="gameOverScreen" class="overlay-screen hidden">
         <h2>GAME OVER</h2>
-        <p id="finalScore"></p>
-        <button id="restartBtn">RESTART</button>
+    
+            <p id="finalScore"></p>
+
+            <input type="text" id="nameInput" placeholder="Enter name" />
+
+            <button id="submitScoreBtn">SUBMIT SCORE</button>
+            <button id="restartBtn">RESTART</button>
     </div>
 
     <div style="margin-top: 2rem;">

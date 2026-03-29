@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Space Invaders - Aishah Arcade</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+<header>
+<h1 class="neon-title">SPACE INVADERS</h1>
+</header>
+<button onclick="toggleMusic()" class="btn">MUSIC ON/OFF</button>
+
+<main style="text-align:center; padding:2rem;">
+
+<div style="position: relative; display: inline-block;">
+<canvas id="spaceCanvas" width="600" height="400"></canvas>
+
+<div id="startMessage" class="overlay-screen">
+<h2>CLICK TO START</h2>
+<p style="font-size:0.6rem;">SPACE = SHOOT</p>
+</div>
+</div>
+
+<p style="margin-top:2rem;">Score: <span id="score">0</span></p>
+
+<div style="margin-top:3rem;">
+<a href="../index.html" class="game-card">BACK TO ARCADE</a>
+</div>
+
+</main>
+
+<script src="invaders.js"></script>
+</body>
+</html>

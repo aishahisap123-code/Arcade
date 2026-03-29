@@ -1,11 +1,11 @@
-
+// CANVAS
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const box = 20;
 const canvasSize = 400;
 
-
+// DOM
 const scoreDisplay = document.getElementById("score");
 const highScoreDisplay = document.getElementById("highScore");
 const startScreen = document.getElementById("startScreen");
@@ -13,7 +13,10 @@ const gameOverScreen = document.getElementById("gameOverScreen");
 const finalScoreDisplay = document.getElementById("finalScore");
 const restartBtn = document.getElementById("restartBtn");
 
+const nameInput = document.getElementById("nameInput");
+const submitScoreBtn = document.getElementById("submitScoreBtn");
 
+// GAME STATE
 let snake;
 let food;
 let direction;
@@ -21,11 +24,11 @@ let score;
 let gameInterval;
 let gameStarted = false;
 
-
+// HIGH SCORE
 let highScore = localStorage.getItem("snakeHighScore") || 0;
 highScoreDisplay.textContent = highScore;
 
-
+// INIT
 function initGame() {
     snake = [{ x: 9 * box, y: 10 * box }];
     direction = null;
@@ -37,7 +40,7 @@ function initGame() {
     draw();
 }
 
-
+// FOOD
 function spawnFood() {
     food = {
         x: Math.floor(Math.random() * 20) * box,
@@ -45,7 +48,7 @@ function spawnFood() {
     };
 }
 
-
+// DRAW
 function draw() {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvasSize, canvasSize);
@@ -59,7 +62,7 @@ function draw() {
     ctx.fillRect(food.x, food.y, box, box);
 }
 
-
+// UPDATE
 function update() {
     const head = { ...snake[0] };
 
@@ -68,7 +71,7 @@ function update() {
     if (direction === "RIGHT") head.x += box;
     if (direction === "DOWN") head.y += box;
 
-    // Wall collision
+    // WALL COLLISION
     if (
         head.x < 0 ||
         head.y < 0 ||
@@ -79,7 +82,7 @@ function update() {
         return;
     }
 
-    // Self collision
+    // SELF COLLISION
     for (let part of snake) {
         if (head.x === part.x && head.y === part.y) {
             endGame();
@@ -100,7 +103,7 @@ function update() {
     draw();
 }
 
-
+// START GAME
 function startGame() {
     if (gameStarted) return;
 
@@ -109,13 +112,40 @@ function startGame() {
     gameInterval = setInterval(update, 120);
 }
 
+//  SAVE SCORE (UPDATED LOGIC)
+function saveScore(game, score, name) {
+    if (!name) name = "Player";
 
+    let scores = JSON.parse(localStorage.getItem(game)) || [];
+
+    //  CHECK IF NAME EXISTS
+    let existing = scores.find(s => s.name === name);
+
+    if (existing) {
+        // ONLY update if new score is higher
+        if (score > existing.score) {
+            existing.score = score;
+        }
+    } else {
+        scores.push({ name, score });
+    }
+
+    // SORT
+    scores.sort((a, b) => b.score - a.score);
+
+    // LIMIT
+    scores = scores.slice(0, 5);
+
+    localStorage.setItem(game, JSON.stringify(scores));
+}
+
+// END GAME
 function endGame() {
     clearInterval(gameInterval);
 
     finalScoreDisplay.textContent = "Score: " + score;
 
-    // Save High Score
+    // HIGH SCORE
     if (score > highScore) {
         highScore = score;
         localStorage.setItem("snakeHighScore", highScore);
@@ -125,7 +155,7 @@ function endGame() {
     gameOverScreen.classList.remove("hidden");
 }
 
-
+// CONTROLS
 document.addEventListener("keydown", event => {
 
     if (!gameStarted &&
@@ -143,11 +173,55 @@ document.addEventListener("keydown", event => {
         direction = "DOWN";
 });
 
+//  SUBMIT SCORE BUTTON
+submitScoreBtn.addEventListener("click", () => {
+    const name = nameInput.value.trim();
 
+    saveScore("snake", score, name);
+
+    nameInput.value = "";
+});
+
+// ENTER KEY SUPPORT
+nameInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+        submitScoreBtn.click();
+    }
+});
+
+// RESTART
 restartBtn.addEventListener("click", () => {
     gameOverScreen.classList.add("hidden");
     initGame();
 });
 
+// GLOBAL MUSIC SYSTEM
+const music = new Audio("../sounds/arcade.mp3");
+music.loop = true;
+music.volume = 0.3;
 
+// LOAD STATE
+let musicOn = localStorage.getItem("musicOn");
+
+if (musicOn === null) {
+    localStorage.setItem("musicOn", "true");
+    musicOn = "true";
+}
+
+if (musicOn === "true") {
+    music.play();
+}
+
+// TOGGLE FUNCTION
+function toggleMusic() {
+    if (music.paused) {
+        music.play();
+        localStorage.setItem("musicOn", "true");
+    } else {
+        music.pause();
+        localStorage.setItem("musicOn", "false");
+    }
+}
+
+// INIT
 initGame();

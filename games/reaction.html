@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reaction - Aishah Arcade</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Pixel Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Shared Arcade Styling -->
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header>
+    <h1 class="neon-title">REACTION</h1>
+</header>
+
+<button onclick="toggleMusic()" class="btn">MUSIC ON/OFF</button>
+
+<main style="text-align:center; padding:2rem;">
+
+    <div style="position:relative; display:inline-block;">
+
+        <!-- GAME BOX -->
+        <canvas id="reactionCanvas" width="400" height="400"></canvas>
+
+        <!-- START SCREEN -->
+        <div id="startScreen" class="overlay-screen">
+            <h2>CLICK TO START</h2>
+        </div>
+
+        <!-- GAME OVER -->
+        <div id="gameOverScreen" class="overlay-screen hidden">
+            <h2>YOUR TIME</h2>
+            <p id="finalTime"></p>
+
+            <input id="nameInput" placeholder="Enter name">
+            <button id="submitScoreBtn" class="btn">SUBMIT</button>
+            <button id="restartBtn" class="btn">RESTART</button>
+        </div>
+
+    </div>
+
+    <div style="margin-top:2rem;">
+        <p>Wait for GREEN then click!</p>
+    </div>
+
+    <div style="margin-top:2rem;">
+        <a href="../index.html" class="game-card">BACK TO ARCADE</a>
+    </div>
+
+</main>
+
+<script src="reaction.js"></script>
+
+</body>
+</html>
